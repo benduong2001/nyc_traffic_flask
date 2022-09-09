@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html>
+   <head>
+      <title>NYC Traffic Prediction</title>
+      <link rel = "stylesheet" href = "http://cdn.leafletjs.com/leaflet-0.7.3/leaflet.css"/>
+      <script src = "http://cdn.leafletjs.com/leaflet-0.7.3/leaflet.js"></script>
+   </head>
+
+   <body>
+	<h1>NYC Traffic Prediction (90% Accurate No clickbait)</h1>
+	<p>Input the hour of day, whether or not it's a weekend, and selected NYC Street (click on the map)</p>
+	<p>The model will predict Traffic volume and its relative level (Above/Below 0 means Above/Below Average)</p>
+        <form name="form", method="POST", style="text-align: center;">
+            <br>
+            Hour: <input type="time" name="hour", min="00:00" max="23:59" required/>
+            <br><br>
+            Is Weekend: <input type="checkbox" name="is_weekend"/>
+            <br><br>
+            Latitude <input id="lat" type="text" name="latitude", placeholder="X coord" required/>
+            <br><br>
+            Longitude <input id="lon", type="text" name="longitude", placeholder="Y coord" required/>
+            <br><br>
+            <button value="Submit">Run</button>
+        </form>
+        <p style="text-align: center;">{{ output }}</p>
+      <div id = "map" style = "width:900px; height:580px"></div>
+      <script>
+         // Creating map options
+         var mapOptions = {
+            center: [40.7128, -74.0060],
+            zoom: 10,
+            zoomControl: false
+         }
+         var map = new L.map('map', mapOptions); // Creating a map object
+         
+         // Creating a Layer object
+         var layer = new L.TileLayer('http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png');
+         map.addLayer(layer);   // Adding layer to the map
+         
+         // zoom control options
+         var zoomOptions = {
+            zoomInText: '1',
+            zoomOutText: '0',
+         };
+         var zoom = L.control.zoom(zoomOptions);   // Creating zoom control
+         zoom.addTo(map);   // Adding zoom control to the map
+
+	map.on('click', 
+					function(e){
+						var coord = e.latlng.toString().split(',');
+						var lat = coord[0].split('(');
+						var lng = coord[1].split(')');
+						document.getElementById('lat').value = lat[1];
+						document.getElementById('lon').value = lng[0];
+						console.log("You clicked the map at latitude: " + lat[1] + " and longitude:" + lng[0]);
+					});
+      </script>
+
+   </body>
+   
+</html>
