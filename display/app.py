@@ -41,21 +41,18 @@ def main():
         x_coord = float(longitude)
         y_coord = float(latitude)
         
-
-        with open('../data/temp/saved_zscore_traffic.pkl', 'rb') as f:
-            saved_zscore_traffic = pickle.load(f)
-            f.close()
         
         # prediction = str(hour) + " " + str(is_weekend) + " " + str(x_coord) + " " + str(y_coord)
-        prediction = make_prediction(hour, is_weekend, x_coord, y_coord)
-        quantity = int(prediction)
-        relative_level = ((np.log1p(prediction) - saved_zscore_traffic["mean"])/saved_zscore_traffic["std"])
-        prediction = "Predicted Traffic Volume: {0} cars, Relative Level: {1},".format(str(quantity),str(np.round(relative_level, 2)))
-        #make_prediction = 
+        prediction_output = make_prediction(hour, is_weekend, x_coord, y_coord)
+        if prediction_output == "ERROR OUT OF BOUNDS":
+            html_output_value = "ERROR: Re-select coordinates inside of NYC boundaries"
+        else:
+            html_output_value = "Predicted Traffic Volume Level: {0}".format(str(prediction_output))
+            #make_prediction = 
     else:
-        prediction = ""
+        html_output_value = ""
         
-    return render_template("website.html", output = prediction)
+    return render_template("website.html", output = html_output_value)
 
 # Running the app
 if __name__ == '__main__':
