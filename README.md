@@ -27,7 +27,7 @@ After forking the project, some specific steps needs to be manually done:
 
 * We are now ready to run the flask app. In your conda env,
 ```
-cd C:\Users\Countlinard\nyc_traffic_flask\display\
+cd C:\Users\Benson\nyc_traffic_flask\display\
 python app.py
 ```
 Copy the output http link to browser to use the Flask app
