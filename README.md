@@ -18,6 +18,9 @@ conda install -c conda-forge geopandas
 conda install -c conda-forge werkzeug=2.0.3
 conda install -c conda-forge flask=2.1.0
 ```
+
+**Docker Image**: bensonduong/skopchay:latest
+
 After forking the project, some specific steps needs to be manually done:
 * **"/data/raw/raw_orig_geodata/"** should have 2 subfolders of GIS Data. One is already provided but in zipped form. The other is too big for Github (~1GB), and needs to be manually downloaded.
   * Go to https://www1.nyc.gov/site/planning/data-maps/open-data/dwn-pluto-mappluto.page and download "MapPLUTO - Shoreline Clipped (Shapefile)". 
