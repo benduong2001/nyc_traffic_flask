@@ -15,14 +15,14 @@ USER root
 
 RUN apt update
 
-RUN apt-get -y install aria2 nmap traceroute
+# RUN apt-get -y install aria2 nmap traceroute
 
 # 3) install packages using notebook user
 USER jovyan
 
 # RUN conda install -y babypandas geopandas
 
-RUN pip install --no-cache-dir geopandas numpy pandas matplotlib scipy scikit-learn bs4 requests seaborn gdown shapely
+RUN pip install --no-cache-dir geopandas numpy pandas matplotlib scipy scikit-learn bs4 requests seaborn gdown shapely werkzeug flask
 
 # Override command to disable running jupyter notebook at launch
 CMD ["/bin/bash"]
