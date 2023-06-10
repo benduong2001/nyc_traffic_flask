@@ -1,1 +1,1 @@
-from dsplay.app import *
+from display.app import *
