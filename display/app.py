@@ -54,8 +54,7 @@ def main():
         
     return render_template("website.html", output = html_output_value)
 
-onrender = False
-if onrender == False:
-    # Running the app
-    if __name__ == '__main__':
-        app.run(debug = True)
+
+# Running the app
+if __name__ == '__main__':
+    app.run(debug = True)
