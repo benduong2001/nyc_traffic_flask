@@ -1,13 +1,72 @@
 <!DOCTYPE html>
 <html>
    <head>
+<style>
+body {background-color: #29465B}
+h1   {color: white; font-family: Arial, Helvetica, sans-serif;}
+h2   {color: white; font-family: Arial, Helvetica, sans-serif; text-align: center;}
+p    {color: white; font-family: Arial, Helvetica, sans-serif;}
+form    {color: white; font-family: Arial, Helvetica, sans-serif;}
+div     {color: white; font-family: Arial, Helvetica, sans-serif;}
+.parallax {
+  /* The image used */
+  background-image: url("https://i.natgeofe.com/n/874df281-d3e0-489a-98c0-6b840023b828/newyork_NationalGeographic_2328428_2x1.jpg");
+
+  /* Set a specific height */
+  min-height: 500px; 
+
+  /* Create the parallax scrolling effect */
+  background-attachment: fixed;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: cover;
+}
+
+.projectHeading {
+position: absolute;
+top: 20%;
+width: 100%;
+color: white; 
+font-family: Arial, Helvetica, sans-serif;
+font-size: 80px;
+text-align: center;
+}
+.projectSubHeading {
+position: absolute;
+top: 50%;
+width: 100%;
+color: white; 
+font-family: Arial, Helvetica, sans-serif;
+font-size: 40px;
+text-align: center;
+}
+.map {
+margin: auto;
+}
+
+.selectedData {
+margin: auto;
+}
+
+.dataVizHeading {
+color: white; 
+font-family: Arial, Helvetica, sans-serif;
+font-size: 20px;
+text-align: center;
+}
+</style>
       <title>NYC Traffic Prediction</title>
-      <link rel = "stylesheet" href = "http://cdn.leafletjs.com/leaflet-0.7.3/leaflet.css"/>
-      <script src = "http://cdn.leafletjs.com/leaflet-0.7.3/leaflet.js"></script>
-   </head>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="">
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+<script src='https://unpkg.com/@turf/turf/turf.min.js'></script>
+<script src="http://d3js.org/d3.v4.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/d3/4.6.0/d3.min.js"></script>   
+<script src="{{ url_for('static', filename='streetSegments.geojson') }}"></script>
+<script src="{{ url_for('static', filename='landuse.geojson') }}"></script>
+</head>
 
    <body>
-	<h1>NYC Traffic Prediction</h1>
+<div class="parallax"><div class="projectHeading">NYC Traffic Prediction</div><div class="projectSubHeading">By Benson Duong</div></div>
 	<p>Input the hour of day, whether or not it's a weekend, and selected NYC Street (click on the map)</p>
 	<p>The model will predict Traffic level (from High to Low)</p>
         <form name="form", method="POST", style="text-align: center;">
@@ -24,36 +83,470 @@
         </form>
         <p style="text-align: center;">{{ output }}</p>
       <div id = "map" style = "width:900px; height:580px"></div>
+<h2>Data Visualization</h2>
+<div id="pieVizAreaPerc">
+<div id="selectedData"></div>
+</div>
+
       <script>
+
+// Array to store the loaded JSON data
+const jsonData = [];
+
+// Function to load a JSON file and return a promise
+function loadJSON(file) {
+  return fetch(file)
+    .then(response => response.json())
+    .catch(error => console.log('Error loading JSON file:', error));
+}
+
+// List of file paths
+const file1 = './static/streetSegments.geojson';
+const file2 = './static/landuse.geojson';
+
+// Load multiple JSON files simultaneously
+Promise.all([loadJSON(file1), loadJSON(file2)])
+  .then(data => {
+    // Store the loaded JSON data in separate variables
+    const data1 = data[0];
+    const data2 = data[1];
+
+    console.log('Data from file1:', typeof(data1));
+    console.log('Data from file1:', Object.keys(data1));
+    console.log('Data from file1:', data1["features"].length);
+    console.log('Data from file2:', typeof(data2));
+    console.log('Data from file2:', Object.keys(data2));
+    console.log('Data from file2:', data2["features"].length);
+
+var streetSegments = data1["features"]
+
+var parcelLots = data2["features"] 
+
+
+    // Continue with your code logic here...
+
+
          // Creating map options
-         var mapOptions = {
+var mapOptions = {
             center: [40.7128, -74.0060],
             zoom: 10,
             zoomControl: false
-         }
-         var map = new L.map('map', mapOptions); // Creating a map object
+}
          
-         // Creating a Layer object
-         var layer = new L.TileLayer('http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png');
-         map.addLayer(layer);   // Adding layer to the map
-         
-         // zoom control options
-         var zoomOptions = {
+// Create Map
+var map = new L.map('map', mapOptions); // Creating a map object
+// Creating Layer
+var layer = new L.TileLayer('http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png');         
+map.addLayer(layer);   // Adding layer to the map
+
+      
+// zoom control options         
+var zoomOptions = {
             zoomInText: '1',
             zoomOutText: '0',
-         };
-         var zoom = L.control.zoom(zoomOptions);   // Creating zoom control
-         zoom.addTo(map);   // Adding zoom control to the map
+         
+};
+var zoom = L.control.zoom(zoomOptions);   // Creating zoom control         
+zoom.addTo(map);   // Adding zoom control to the map
 
-	map.on('click', 
-					function(e){
-						var coord = e.latlng.toString().split(',');
-						var lat = coord[0].split('(');
-						var lng = coord[1].split(')');
-						document.getElementById('lat').value = lat[1];
-						document.getElementById('lon').value = lng[0];
-						console.log("You clicked the map at latitude: " + lat[1] + " and longitude:" + lng[0]);
-					});
+
+// https://stackoverflow.com/questions/41256026/clear-marker-layers-leaflet
+
+var mapLayerGroup;
+mapLayerGroup = L.layerGroup().addTo(map);
+
+var streetSegmentLayer;
+var streetSegmentBufferLayer; 
+var parcelLotLayer; 
+
+
+
+
+streetSegmentLayer = L.geoJSON().addTo(mapLayerGroup ); // a currently blank layer that street segment polylines will be added onto later
+streetSegmentBufferLayer = L.geoJSON().addTo(mapLayerGroup ); // a currently blank layer that street segments buffer polygons will be added onto later
+parcelLotLayer = L.geoJSON().addTo(mapLayerGroup ); // a currently blank layer that building footprint polygons will be added onto later
+
+
+
+
+
+map.on('click', 
+function(e)
+{
+// clear the map's canvas and re-add the layers again
+// this allows us to auto-delete all the old highlighted street segment, polygons, and buffers when a new coordinate is clicked
+mapLayerGroup.clearLayers(); 
+
+
+//newqw
+//streetSegmentLayer = L.geoJSON().addTo(mapLayerGroup ); 
+//streetSegmentBufferLayer = L.geoJSON().addTo(mapLayerGroup ); 
+//parcelLotLayer = L.geoJSON().addTo(mapLayerGroup ); 
+
+var selectedCoords = e.latlng.toString().split(',');
+var lat = selectedCoords[0].split('(')[1];
+var lng = selectedCoords[1].split(')')[0];
+			
+document.getElementById('lat').value = lat;
+document.getElementById('lon').value = lng;
+
+var turfCoords = turf.point([lng, lat]);
+
+console.log("You clicked the map at latitude: " + lat + " and longitude:" + lng);
+
+// Find the closest Street Segment to the selected (and then projected) coordinates
+var tempStreetSegmentIter = 0;
+var tempStreetSegment = streetSegments[tempStreetSegmentIter];
+var tempStreetSegmentDistance = turf.pointToLineDistance(turfCoords, turf.toWgs84(tempStreetSegment), {units: 'miles', method: 'geodesic'});
+
+var closestStreetSegmentIter = tempStreetSegmentIter;
+var closestStreetSegment = tempStreetSegment; 
+var closestStreetSegmentDistance = tempStreetSegmentDistance;
+
+for (let i = 1; i < streetSegments.length; i++) {
+    tempStreetSegment =  streetSegments[i];
+    tempStreetSegmentDistance = turf.pointToLineDistance(turfCoords, turf.toWgs84(tempStreetSegment), {units: 'miles', method: 'geodesic'});
+    if (tempStreetSegmentDistance < closestStreetSegmentDistance) {
+        closestStreetSegment = tempStreetSegment;
+        closestStreetSegmentDistance = tempStreetSegmentDistance;
+        closestStreetSegmentIter = i
+    } else {
+    }
+}
+
+// Shows the closest street segment polyline to the chosen coordinate  visibly on the map
+var currStreetSegment = turf.toWgs84(closestStreetSegment);  // never forget to re-project
+
+
+
+
+// newqw
+var streetSegmentStyle = {
+    "color": "#ff7800",
+    "weight": 5,
+    "opacity": 1
+};
+streetSegmentLayer = L.geoJSON(currStreetSegment,{style: streetSegmentStyle}).addTo(mapLayerGroup ); 
+// streetSegmentLayer.addData(currStreetSegment);
+
+
+// Shows the buffer around the current street segment polyline visibly on the map
+var streetSegmentBuffer = turf.buffer(currStreetSegment, 500, {units: "feet"})
+
+
+
+
+
+
+
+// newqw
+var streetSegmentBufferStyle = {
+    "color": "red",
+    "weight": 0,
+    "opacity": 0,
+    "fillOpacity": 0.25,
+};
+streetSegmentBufferLayer = L.geoJSON(streetSegmentBuffer,{style: streetSegmentBufferStyle}).addTo(mapLayerGroup );
+// streetSegmentBufferLayer.addData(currStreetSegmentBuffer);
+
+
+
+
+
+// Show the parcel lots
+var tempParcelLot;
+var currParcelLot;
+var tempParcelLotVertices;
+var tempParcelLotVertice;
+var parcelLotsWithinBuffer = []; //newqw
+var status;
+var numParcelLots = 0;
+
+console.log("parcelLots 0", parcelLots[0]);
+console.log("streetSegment", currStreetSegment)
+
+// start of newqw2
+// https://s-media.nyc.gov/agencies/dcp/assets/files/pdf/data-tools/bytes/meta_mappluto_clipped.pdf
+var landUseStyleInfo = {
+"01": {"color": "#faf607", "name": "One & Two Family Buildings"},
+"02": {"color": "#faf607", "name": "Multi - Family Walk- Up Buldings"},
+"03": {"color": "#faf607", "name": "Multi - Family Elevator Buildings"},
+"04": {"color": "#5ecf44", "name": "Mixed Residential and Commercial Buildings"},
+"05": {"color": "#0884cc", "name": "Commercial and Office Buildings"},
+"06": {"color": "#668cff", "name": "Industrial and Manufacturing"},
+"07": {"color": "#453efa", "name": "Transportation and Utility"},
+"08": {"color": "#66fff2", "name": "Public Facilities and Institutions"},
+"09": {"color": "#747699", "name": "Open Space and Outdoor Recreation"},
+"10": {"color": "#4a6778", "name": "Parking Facilities"},
+"11": {"color": "#577b80", "name": "Vacant Land"},
+"00": {"color": "#818282", "name": "Unknown"} // self added null category
+}
+var landUseNames = Object.keys(landUseStyleInfo);
+
+var tempDifference;
+var tempDifferenceArea;
+var tempClippedArea;
+var tempLandUse;
+var tempParcelLotArea;
+var landUseAreaTracker = {};
+var landUseAreaTotal = 0;
+var landUseNumTracker = {};
+var landUseNumTotal = 0;
+for (let i = 0; i < landUseNames.length; i++){
+    landUseAreaTracker[landUseNames[i]] = 0; //prefill the object with 0's
+    landUseNumTracker[landUseNames[i]] = 0; //prefill the object with 0's
+}
+// end of newqw2
+
+for (let i = 0; i < parcelLots.length; i++) {
+    tempParcelLot =  parcelLots[i]; // a building footprint polygon
+//
+    // as of July 2023, turf.booleanContains cannot use 2 polygons. so one polygon must be exploded into a list of points (polygon-point is a valid input pair)
+    tempParcelLotVertices = turf.explode(tempParcelLot)["features"]; // now exploded into a list of its vertices;
+    status = tempParcelLotVertices.length;
+    while (status > 0){
+        tempParcelLotVertice = tempParcelLotVertices[status - 1]
+        if (turf.booleanContains(streetSegmentBuffer, turf.toWgs84(tempParcelLotVertice))) {
+            status = 0;
+            
+            numParcelLots++; 
+            currParcelLot = turf.toWgs84(tempParcelLot);
+            //parcelLotLayer.addData(currParcelLot); //newqw
+            parcelLotsWithinBuffer.push(currParcelLot);  //newqw 
+
+            //start of newqw2 
+            tempLandUse = tempParcelLot["properties"]["LandUse"];
+
+            tempLandUse = (landUseNames.includes(tempLandUse)) ? tempLandUse : "00";
+
+            landUseNumTotal = landUseNumTotal + 1;
+            if (landUseNumTracker.hasOwnProperty(tempLandUse)){ 
+                landUseNumTracker[tempLandUse] = landUseNumTracker[tempLandUse] + 1;
+            } else {
+                landUseNumTracker[tempLandUse] = 1; } 
+
+            tempParcelLotArea = turf.area(turf.toWgs84(tempParcelLot));
+            tempDifference = turf.difference(turf.toWgs84(tempParcelLot), streetSegmentBuffer) 
+            tempDifferenceArea = tempDifference ? turf.area(tempDifference) : 0; //?? is ternary operator, impute 0 if null //newqw2
+            tempClippedArea = tempParcelLotArea - tempDifferenceArea; //newqw2
+            
+            landUseAreaTotal = landUseAreaTotal + tempClippedArea;
+            if (landUseAreaTracker.hasOwnProperty(tempLandUse)){ 
+                landUseAreaTracker[tempLandUse] = landUseAreaTracker[tempLandUse] + tempClippedArea;
+            } else {
+                landUseAreaTracker[tempLandUse] = tempClippedArea; }
+            // end of newqw2
+            
+        } else {
+            status--;
+        }
+    }
+//    
+}
+
+// start of newqw2
+var consolidatedLandUseD3Info = [] // newqw3
+var tempLandUseD3Info ; // newqw3
+var tempLandUseArea;
+var tempLandUseAreaPerc;
+var tempLandUseNum;
+var tempLandUseNumPerc;
+var landUseAreaTrackerPerc = {};
+var landUseNumTrackerPerc = {};
+
+
+var tempLandUse; 
+for (let i = 0; i < Object.keys(landUseNumTracker).length; i++){
+    tempLandUse = Object.keys(landUseNumTracker)[i];
+    
+    tempLandUseArea = landUseAreaTracker[tempLandUse];
+    tempLandUseAreaPerc = tempLandUseArea / landUseAreaTotal;
+    landUseAreaTrackerPerc[tempLandUse] = tempLandUseAreaPerc;
+
+    tempLandUseNum = landUseNumTracker[tempLandUse];
+    tempLandUseNumPerc = tempLandUseNum / landUseNumTotal;
+    landUseNumTrackerPerc[tempLandUse] = tempLandUseNumPerc;
+    
+    // start of newqw3
+    tempLandUseD3Info = {
+"landUse": tempLandUse, 
+"name": landUseStyleInfo[tempLandUse]["name"],
+"color": landUseStyleInfo[tempLandUse]["color"],
+"valueArea": tempLandUseArea,
+"valueAreaPerc": tempLandUseAreaPerc,
+"valueNum": tempLandUseNum ,
+"valueNumPerc": tempLandUseNumPerc ,
+} 
+    consolidatedLandUseD3Info.push(tempLandUseD3Info )
+    // end of newqw3
+}
+
+/*
+// originally, this should have replaced the case switches, but  landUseStyleInfo is not recognized
+var landUseStyleWeight = 2;
+var landUseStyleFillOpacity = 0.5;
+var nullLandUseColor = "#818282";
+
+function getLandUsePolygonStyle(feature){
+        tempLandUse = feature["properties"]["LandUse"];
+        if landUseStyleInfo.hasOwnProperty(tempLandUse){ 
+            return {color: landUseStyleInfo[tempLandUse]["color"], weight: landUseStyleWeight, fillOpacity: landUseStyleFillOpacity};
+        } else {
+            return {color: nullLandUseColor , weight: landUseStyleWeight, fillOpacity: landUseStyleFillOpacity};
+        }
+}
+*/
+console.log(landUseAreaTrackerPerc);
+console.log(landUseNumTracker);
+
+parcelLotLayer = L.geoJSON(parcelLotsWithinBuffer, {style: function(feature) {
+        switch (feature.properties.LandUse) {
+            case '01':   return {color: "#faf607", weight: 2, fillOpacity: 0.5};
+            case '02':   return {color: "#faf607", weight: 2, fillOpacity: 0.5};
+            case '03':   return {color: "#faf607", weight: 2, fillOpacity: 0.5};
+            case '04':   return {color: "#5ecf44", weight: 2, fillOpacity: 0.5};
+            case '05':   return {color: "#0884cc", weight: 2, fillOpacity: 0.5};
+            case '06':   return {color: "#668cff", weight: 2, fillOpacity: 0.5};
+            case '07':   return {color: "#453efa", weight: 2, fillOpacity: 0.5};
+            case '08':   return {color: "#66fff2", weight: 2, fillOpacity: 0.5};
+            case '09':   return {color: "#747699", weight: 2, fillOpacity: 0.5};
+            case '10':   return {color: "#4a6778", weight: 2, fillOpacity: 0.5};
+            case '11':   return {color: "#577b80", weight: 2, fillOpacity: 0.5};
+            default: return {color: "#818282", weight: 2, fillOpacity: 0.5};
+        }
+}}).addTo(mapLayerGroup ); 
+
+// end of newqw2
+
+console.log(numParcelLots);
+
+
+
+
+
+// start of newqw3
+// https://medium.com/@kj_schmidt/show-data-on-mouse-over-with-d3-js-3bf598ff8fc2
+
+// start of piechart
+var width = 360;
+var height = 360;
+var radius = Math.min(width, height) / 2;
+var donutWidth = 75; //This is the size of the hole in the middle
+
+//const svg_piebase_preexisting = document.getElementById("landUseAreaPercPieSvg");
+//svg_piebase_preexisting.remove();
+d3.select('#landUseAreaPercPieSvg').remove();
+
+var svg_piebase = d3.select('#selectedData')
+     .append('svg')
+     .attr('id', 'landUseAreaPercPieSvg')
+     .attr('width', width*2)
+     .attr('height', height)
+var svg_pie = svg_piebase 
+     .append('g')
+     .attr('transform', 'translate(' + (width / 2) + ',' + (height / 2) + ')');
+var arc = d3.arc()
+     .innerRadius(radius - donutWidth)
+     .outerRadius(radius);
+var pie = d3.pie()
+     .value(function (d) {
+          return d.valueAreaPerc;
+     })
+     .sort(null);
+
+var div = d3.select("body").append("div")
+     .attr("class", "tooltip-donut")
+     .style("opacity", 0);
+var path = svg_pie.selectAll('path')
+     .data(pie(consolidatedLandUseD3Info ))
+     .enter()
+     .append('path')
+     .attr('d', arc)
+     .attr('fill', function (d, i) {
+          return d.data.color;
+     })
+     .attr('transform', 'translate(0, 0)')
+     .on('mouseover', function (d, i) {
+          d3.select(this).transition()
+               .duration('50')
+               .attr('opacity', '.85');
+          div.transition()
+               .duration(50)
+               .style("opacity", 1);
+          let text = d.data.name + " = " + (Math.round(d.data.valueAreaPerc * 100)).toString() + "% (" + (Math.round(d.data.valueArea,2)).toString() + " sq m)";
+          div.html(text)
+               .style("left", (d3.event.pageX + 10) + "px")
+               .style("top", (d3.event.pageY - 15) + "px");
+     })
+     .on('mouseout', function (d, i) {
+          d3.select(this).transition()
+               .duration('50')
+               .attr('opacity', '1');
+          div.transition()
+               .duration('50')
+               .style("opacity", 0);
+     });
+// end of piechart
+
+
+
+// start of legend for piechart
+
+// Add one dot in the legend for each name.
+var svg_pielegend = svg_piebase 
+     .append('g')
+     .attr('transform', 'translate(' + (width+5) + ',' + (0) + ')');
+svg_pielegend.selectAll("mydots")
+  .data(landUseNames)
+  .enter()
+  .append("circle")
+    .attr("cx", 10)
+    .attr("cy", function(d,i){ return 20 + i*25}) // 100 is where the first dot appears. 25 is the distance between dots
+    .attr("r", 7)
+    .style("fill", function(d){ return landUseStyleInfo[d]["color"]})
+
+// Add one dot in the legend for each name.
+svg_pielegend.selectAll("mylabels")
+  .data(landUseNames)
+  .enter()
+  .append("text")
+    .attr("x", 30)
+    .attr("y", function(d,i){ return 20 + i*25}) // 100 is where the first dot appears. 25 is the distance between dots
+    .style("fill", function(d){ return "white"})
+    .text(function(d){ return landUseStyleInfo[d]["name"]})
+    .attr("text-anchor", "left")
+    .style("alignment-baseline", "middle")
+// end of legend for piechart
+
+
+
+
+// end of newqw3
+
+
+
+
+
+
+
+});
+
+
+
+  });
+
+
+
+
+
+
+
+
+
+
+
+
+
       </script>
 
    </body>
