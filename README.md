@@ -1,6 +1,10 @@
 # nyc_traffic_flask
 
-![](https://github.com/benduong2001/ArcGIS_Project_nyc_traffic/blob/main/ArcGIS_Project_nyc_traffic_pics/leaflet_gif.gif) 
+
+
+https://github.com/benduong2001/nyc_traffic_flask/assets/62922098/ad5be968-6b06-47b2-816d-6cba730b8df8
+
+
 
 # NYC Traffic Prediction 
 * This project builds a Flask App with leaflet.js to make predictions of NYC Traffic using machine learning.
