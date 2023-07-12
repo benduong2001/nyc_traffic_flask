@@ -1,1 +1,0 @@
-from display.app import *
