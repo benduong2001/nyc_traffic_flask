@@ -24,5 +24,6 @@ USER jovyan
 
 RUN pip install --no-cache-dir geopandas numpy pandas matplotlib scipy scikit-learn bs4 requests seaborn gdown shapely werkzeug flask geojson sodapy statsmodels polars pyarrow tqdm 
 
+
 # Override command to disable running jupyter notebook at launch
 CMD ["/bin/bash"]
