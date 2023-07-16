@@ -4,7 +4,8 @@
 
 
 
-https://github.com/benduong2001/nyc_traffic_flask/assets/62922098/1578a46e-bdea-4f19-803f-51bc74ceb048
+<!--https://github.com/benduong2001/nyc_traffic_flask/assets/62922098/1578a46e-bdea-4f19-803f-51bc74ceb048-->
+![](assets/nyc_traffic_optimized4.gif)
 
 
 
