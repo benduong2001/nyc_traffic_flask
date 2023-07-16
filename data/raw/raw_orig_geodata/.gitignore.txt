@@ -1,0 +1,6 @@
+!folder/
+folder/*
+*
+!.gitignore
+!stub.txt
+!raw_orig_geodata_street_segment.zip

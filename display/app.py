@@ -24,26 +24,23 @@ def main():
         
         ## # Unpickle classifier
         # model = joblib.load("../data/final/dtr.pkl")
+
+
         
         # Get values through input bars
-        hour = request.form.get("hour")
-        is_weekend = request.form.get("is_weekend")
-        latitude = request.form.get("latitude")
-        longitude = request.form.get("longitude")
+        #print(request.form)
         
-        ## # Put inputs to dataframe
-        ## X = pd.DataFrame([[height, weight]], columns = ["Height", "Weight"])
+        traffic_inputs = request.form.to_dict()
+        #time based features (works for all 3 versions of gdf)
+        traffic_inputs["HH"] = int(traffic_inputs["Hour"].split(":")[0])
+        traffic_inputs.pop("Hour")
+        traffic_inputs["IsWeekend"] = int("IsWeekend" in traffic_inputs)
+        for key in traffic_inputs:
+            traffic_inputs[key] = float(traffic_inputs[key])
         
-        ## # Get prediction
-        ## prediction = clf.predict(X)[0]
-        hour = int(hour.split(":")[0])
-        is_weekend = int(hour=="on")
-        x_coord = float(longitude)
-        y_coord = float(latitude)
+        #print(traffic_inputs)        
         
-        
-        # prediction = str(hour) + " " + str(is_weekend) + " " + str(x_coord) + " " + str(y_coord)
-        prediction_output = make_prediction(hour, is_weekend, x_coord, y_coord)
+        prediction_output = make_prediction(traffic_inputs)
         if prediction_output == "ERROR OUT OF BOUNDS":
             html_output_value = "ERROR: Re-select coordinates inside of NYC boundaries"
         else:

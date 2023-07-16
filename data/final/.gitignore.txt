@@ -1,0 +1,6 @@
+!folder/
+folder/*
+*
+!.gitignore
+!stub.txt
+!multinomreg.pkl
