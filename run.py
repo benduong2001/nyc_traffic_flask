@@ -95,7 +95,7 @@ class Temp_Project_Workflow:
         tdpb = Temp_Data_Preparation_Builder(args)
         path_file_street_segment_shapefile = args["path_file_street_segment_shapefile"]
         street_segment_gdf = tdpb.load_street_segments_gdf(path_file_street_segment_shapefile)
-        street_segment_projected_gdf = tdpb.project_gdf(street_segment_gdf, self.crs)
+        street_segment_projected_gdf = tdpb.project_gdf(street_segment_gdf, tdpb.crs)
         street_segment_cleaned_gdf = tdpb.street_segment_cleaned(street_segment_projected_gdf)
         path_file_street_segment_geojson = args["path_file_street_segment_geojson"]
         tdpb.save_gdf_to_geojson(street_segment_cleaned_gdf[["Segment_ID","Number_Tra","StreetWidt","SHAPE_Leng","geometry"]],path_file_street_segment_geojson)
