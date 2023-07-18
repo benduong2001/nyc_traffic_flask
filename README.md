@@ -15,30 +15,38 @@
 * This is a sub-project of this older kaggle project: https://github.com/benduong2001/ArcGIS_Project_nyc_traffic
 
 
-### Setup
+### Setup with Conda
 
-Get the conda environment up and running and run as follows
+Get a new conda environment up and running and run as follows
 ```
-conda create --name geoenv
+conda create --name geoenv python=3.11
 conda activate geoenv
 conda install -c conda-forge scikit-learn=1.0.2
 conda install -c conda-forge geopandas
 conda install -c conda-forge werkzeug=2.0.3
 conda install -c conda-forge flask=2.1.0
+conda install -c conda-forge geojson -y
+conda install -c conda-forge tqdm -y
+conda install -c conda-forge gdown -y
+conda install -c conda-forge statsmodels
+conda install -c anaconda beautifulsoup4 -y
+pip install sodapy
+pip install polars
+pip install pyarrow
+```
+Activate the environment; fork the project locally and run the run.py file with argument "setup" one time only
+```
+conda activate geoenv
+git clone https://github.com/benduong2001/nyc_traffic_flask.git
+cd C:/Users/Benson/nyc_traffic_flask/
+python run.py setup
+conda deactivate
+```
+After that, all that is needed is to run the app.py inside the display directory.
+```
+conda activate geoenv
+cd C:/Users/Benson/nyc_traffic_flask/display
+python app.py
 ```
 
 **Docker Image**: bensonduong/authry:latest
-
-After forking the project, some specific steps needs to be manually done:
-* **"/data/raw/raw_orig_geodata/"** should have 2 subfolders of GIS Data. One is already provided but in zipped form. The other is too big for Github (~1GB), and needs to be manually downloaded.
-  * Go to https://www1.nyc.gov/site/planning/data-maps/open-data/dwn-pluto-mappluto.page and download "MapPLUTO - Shoreline Clipped (Shapefile)". 
-  * Extract and rename the folder as **"raw_orig_geodata_landuse"**, and put it in the folder **"/data/raw/raw_orig_geodata/"**
-* Extract the already-zipped folder /data/raw/raw_orig_geodata/raw_orig_geodata_street_segment.zip
-* So in the end, the folder **"/data/raw/raw_orig_geodata/"** should have 2 unzipped subfolders: **"/raw_orig_geodata_landuse/"** and **"/raw_orig_geodata_street_segment/"**
-
-* We are now ready to run the flask app. In your conda env,
-```
-cd C:\Users\Benson\nyc_traffic_flask\display\
-python app.py
-```
-Copy the output http link to browser to use the Flask app
