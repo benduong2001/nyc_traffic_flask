@@ -141,7 +141,7 @@ class Temp_Data_Preparation_Builder:
         street_segment_cleaned_gdf = street_segment_gdf
         return street_segment_cleaned_gdf
 
-    def _save_gdf_to_geojson(
+    def save_gdf_to_geojson(
         self,
         gdf,
         path_file_geojson
@@ -335,7 +335,7 @@ class Temp_Data_Preparation_Builder:
         print("saving street segments to geojson")
         path_file_street_segment_geojson = args["path_file_street_segment_geojson"] # os.path.join(path_folder,"display","static","street_segment.geojson")
         #args["path_file_street_segment_geojson"] = path_file_street_segment_geojson # TODO: can be taken uplevel,
-        #self._save_gdf_to_geojson(street_segment_cleaned_gdf[["Segment_ID","Number_Tra","StreetWidt","SHAPE_Leng","geometry"]],path_file_street_segment_geojson)
+        #self.save_gdf_to_geojson(street_segment_cleaned_gdf[["Segment_ID","Number_Tra","StreetWidt","SHAPE_Leng","geometry"]],path_file_street_segment_geojson)
 
         print("buffering street segments")
         street_segment_buffers_gdf = self.street_segment_buffers(street_segment_cleaned_gdf, self.buffer_radius)
@@ -350,7 +350,7 @@ class Temp_Data_Preparation_Builder:
         print("saving landuses to geojson")
         path_file_landuse_geojson = args["path_file_landuse_geojson"] # os.path.join(path_folder,"display","static","landuse.geojson")
         #args["path_file_landuse_geojson"] = path_file_landuse_geojson # TODO: can be taken uplevel,
-        #self._save_gdf_to_geojson(landuse_cleaned_gdf[['LandUse','geometry']],path_file_landuse_geojson)
+        #self.save_gdf_to_geojson(landuse_cleaned_gdf[['LandUse','geometry']],path_file_landuse_geojson)
         
         print("spatially joining landuses to street segment buffers")
         street_segment_buffer_landuses_gdf = self.street_segment_buffer_landuses(landuse_cleaned_gdf,street_segment_buffers_gdf,)
@@ -402,7 +402,7 @@ class Temp_Data_Preparation_Builder:
         print("saving street segments to geojson")
         path_file_street_segment_geojson = args["path_file_street_segment_geojson"] # os.path.join(path_folder,"display","static","street_segment.geojson")
         #args["path_file_street_segment_geojson"] = path_file_street_segment_geojson # TODO: can be taken uplevel,
-        self._save_gdf_to_geojson(street_segment_cleaned_gdf[["Segment_ID","Number_Tra","StreetWidt","SHAPE_Leng","geometry"]],path_file_street_segment_geojson)
+        self.save_gdf_to_geojson(street_segment_cleaned_gdf[["Segment_ID","Number_Tra","StreetWidt","SHAPE_Leng","geometry"]],path_file_street_segment_geojson)
 
         # In this optimized version of the data cleaning, we filter down the street segments even further by only getting those seen in the traffic volume dataset
         # It is important to NOT do this before saving the street segment's geojson, so that the geojson still has the full scope of input roads.
@@ -434,7 +434,7 @@ class Temp_Data_Preparation_Builder:
         print("saving landuses to geojson")
         path_file_landuse_geojson = args["path_file_landuse_geojson"] # os.path.join(path_folder,"display","static","landuse.geojson")
         #args["path_file_landuse_geojson"] = path_file_landuse_geojson # TODO: can be taken uplevel,
-        self._save_gdf_to_geojson(landuse_cleaned_gdf[['LandUse','geometry']],path_file_landuse_geojson)
+        self.save_gdf_to_geojson(landuse_cleaned_gdf[['LandUse','geometry']],path_file_landuse_geojson)
 
         
         print("spatially joining landuses to street segment buffers")
