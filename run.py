@@ -82,7 +82,32 @@ class Temp_Project_Workflow:
         
         self.run_setup(args)
         self.run_app(args)
+
+    def run_use(self,args=None):
+        # if the cloned github repo already comes with the pickled model, there is no need to run setup; only the following steps are needed.
+        from src.data.etl import Temp_Dataset_Builder
+        tdsb = Temp_Dataset_Builder(args)
+        tdsb.etl_street_segments();
+        tdsb.etl_landuse();
+
+        from src.features.data_clean import Temp_Data_Preparation_Builder
+        tdpb = Temp_Data_Preparation_Builder(args)
+        path_file_street_segment_shapefile = args["path_file_street_segment_shapefile"]
+        street_segment_gdf = tdpb.load_street_segments_gdf(path_file_street_segment_shapefile)
+        street_segment_projected_gdf = tdpb.project_gdf(street_segment_gdf, self.crs)
+        street_segment_cleaned_gdf = tdpb.street_segment_cleaned(street_segment_projected_gdf)
+        path_file_street_segment_geojson = args["path_file_street_segment_geojson"]
+        tdpb.save_gdf_to_geojson(street_segment_cleaned_gdf[["Segment_ID","Number_Tra","StreetWidt","SHAPE_Leng","geometry"]],path_file_street_segment_geojson)
         
+        path_file_landuse_shapefile = args["path_file_landuse_shapefile"]
+        landuse_gdf = tdpb.load_landuse_gdf(path_file_landuse_shapefile)
+        landuse_projected_gdf = tdpb.project_gdf(landuse_gdf, tdpb.crs)
+        landuse_cleaned_gdf = tdpb.landuse_cleaned(landuse_projected_gdf)
+        path_file_landuse_geojson = args["path_file_landuse_geojson"]
+        tdpb.save_gdf_to_geojson(landuse_cleaned_gdf[['LandUse','geometry']],path_file_landuse_geojson)
+        
+        
+
     def run(self, targets, args=None):
         if args is None: args = self.args;
         # 
@@ -102,6 +127,7 @@ class Temp_Project_Workflow:
                 self.run_app(args)
             if target in ["all"]:
                 self.run_all(args)
+    
 def main(targets):
     import build_configs; build_configs.main(); # TODO, comment out; put access.json and build_jsons in gitignore
     import build_access; build_access.main(); # TODO, comment out; put access.json and build_jsons in gitignore
