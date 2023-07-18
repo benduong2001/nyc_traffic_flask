@@ -49,4 +49,6 @@ cd C:/Users/Benson/nyc_traffic_flask/display
 python app.py
 ```
 
-**Docker Image**: bensonduong/authry:latest
+### Setup with Docker
+
+**Docker Image**: bensonduong/nyc_traffic:latest
