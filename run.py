@@ -127,6 +127,8 @@ class Temp_Project_Workflow:
                 self.run_app(args)
             if target in ["all"]:
                 self.run_all(args)
+            if target in ["use"]:
+                self.run_use(args)
     
 def main(targets):
     import build_configs; build_configs.main(); # TODO, comment out; put access.json and build_jsons in gitignore
