@@ -94,17 +94,25 @@ class Temp_Project_Workflow:
         from src.features.data_clean import Temp_Data_Preparation_Builder
         tdpb = Temp_Data_Preparation_Builder(args)
         path_file_street_segment_shapefile = args["path_file_street_segment_shapefile"]
+        print("load street segments gdf")
         street_segment_gdf = tdpb.load_street_segments_gdf(path_file_street_segment_shapefile)
+        print("project street segments gdf")
         street_segment_projected_gdf = tdpb.project_gdf(street_segment_gdf, tdpb.crs)
+        print("clean street segments gdf")
         street_segment_cleaned_gdf = tdpb.street_segment_cleaned(street_segment_projected_gdf)
         path_file_street_segment_geojson = args["path_file_street_segment_geojson"]
+        print("save street segments to geojson")
         tdpb.save_gdf_to_geojson(street_segment_cleaned_gdf[["Segment_ID","Number_Tra","StreetWidt","SHAPE_Leng","geometry"]],path_file_street_segment_geojson)
         
         path_file_landuse_shapefile = args["path_file_landuse_shapefile"]
+        print("load landuse gdf")
         landuse_gdf = tdpb.load_landuse_gdf(path_file_landuse_shapefile)
+        print("project landuse gdf")
         landuse_projected_gdf = tdpb.project_gdf(landuse_gdf, tdpb.crs)
+        print("clean landuse gdf")
         landuse_cleaned_gdf = tdpb.landuse_cleaned(landuse_projected_gdf)
         path_file_landuse_geojson = args["path_file_landuse_geojson"]
+        print("save landuse to geojson")
         tdpb.save_gdf_to_geojson(landuse_cleaned_gdf[['LandUse','geometry']],path_file_landuse_geojson)
         
         
