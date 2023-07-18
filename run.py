@@ -85,9 +85,10 @@ class Temp_Project_Workflow:
 
     def run_usemodel(self,args=None):
         # if the cloned github repo already comes with the pickled model, there is no need to run setup; only the following steps are needed.
+        # this whole function just builds the geojsons for the website html
         from src.data.etl import Temp_Dataset_Builder
         tdsb = Temp_Dataset_Builder(args)
-        tdsb.etl_street_segments();
+        tdsb.etl_street_segment();
         tdsb.etl_landuse();
 
         from src.features.data_clean import Temp_Data_Preparation_Builder
