@@ -52,9 +52,3 @@ python app.py
 ### Setup with Docker
 
 **Docker Image**: bensonduong/nyc_traffic_premade:latest
-
-Run the following and open a browser window at localhost:5000, which sends you to the webpage in the video clip seen above. The map takes a bit of time to load before using.
-```
-docker run -d -p 5000:5000 bensonduong/nyc_traffic_premade
-```
-
