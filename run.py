@@ -83,7 +83,7 @@ class Temp_Project_Workflow:
         self.run_setup(args)
         self.run_app(args)
 
-    def run_usemodel(self,args=None):
+    def run_setupdisplay(self,args=None):
         # if the cloned github repo already comes with the pickled model, there is no need to run setup; only the following steps are needed.
         # this whole function just builds the geojsons for the website html
         from src.data.etl import Temp_Dataset_Builder
@@ -136,8 +136,8 @@ class Temp_Project_Workflow:
                 self.run_app(args)
             if target in ["all"]:
                 self.run_all(args)
-            if target in ["usemodel"]:
-                self.run_usemodel(args)
+            if target in ["setupdisplay"]:
+                self.run_setupdisplay(args)
     
 def main(targets):
     import build_configs; build_configs.main(); # TODO, comment out; put access.json and build_jsons in gitignore
