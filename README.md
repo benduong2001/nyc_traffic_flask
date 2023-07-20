@@ -34,12 +34,12 @@ pip install sodapy
 pip install polars
 pip install pyarrow
 ```
-Activate the environment; fork the project locally and run the run.py file with argument "setup_display" one time only
+Activate the environment; fork the project locally and run the run.py file with argument "setupdisplay" one time only (it will take ~20 minutes)
 ```
 conda activate geoenv
 git clone https://github.com/benduong2001/nyc_traffic_flask.git
 cd C:/Users/Benson/nyc_traffic_flask/
-python run.py setup_display
+python run.py setupdisplay
 conda deactivate
 ```
 After that, all that is needed is to run the app.py inside the display directory.
