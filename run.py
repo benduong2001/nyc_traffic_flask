@@ -34,10 +34,13 @@ class Temp_Project_Workflow:
         
         path_folder = args["path_folder"]
         exempt_files = ["stub.txt",".gitignore.txt"]
+        file_name_saved_model = os.path.split(args["path_file_model_pipeline_pickle"])[1]
         # TODO: clear everything (including pickled models) in the data folder EXCEPT the un-deleted zipfile for the street segments
-        self._clear_folder(os.path.join(path_folder, "data", ), exempt_files+["raw_orig_geodata_street_segment.zip"])
+        self._clear_folder(os.path.join(path_folder, "data", ), exempt_files+["raw_orig_geodata_street_segment.zip",file_name_saved_model])
         # TODO: clear the geojsons in display/static folder
-        self._clear_folder(os.path.join(path_folder, "display", "static"), exempt_files)
+        self._clear_folder(os.path.join(path_folder,
+                                        #"display",
+                                        "static"), exempt_files)
         # TODO: clear the database in the dbt folder
         self._clear_folder(os.path.join(path_folder, "src", "features", "dbtnyc","data"), exempt_files)
         pass
@@ -74,8 +77,11 @@ class Temp_Project_Workflow:
         
     def run_app(self, args=None):
         if args is None: args = self.args;
-        
-        import display.app as app
+        print("running app.py")
+        try:
+            import app
+        except:
+            from . import app
 
     def run_all(self, args=None):
         if args is None: args = self.args;

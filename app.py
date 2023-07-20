@@ -1,5 +1,4 @@
 import os
-print(os.path.dirname(os.path.abspath(__file__)))
 from flask import Flask, request, render_template
 import pandas as pd
 import pickle
@@ -7,7 +6,7 @@ import joblib
 import numpy as np
 
 import sys
-sys.path.append("..")
+#sys.path.append("..")
 from src.predict import make_prediction
 
 
@@ -53,4 +52,10 @@ def main():
 
 # Running the app
 if __name__ == '__main__':
-    app.run(debug = True)
+    with_host_port = 1;
+    # if using dockerfile that already has geojsons stored, set with_host_port to 1
+    if with_host_port == 1:
+        port = int(os.environ.get('PORT', 5000))
+        app.run(debug=True, host='0.0.0.0', port=port)
+    else:
+        app.run(debug = True)

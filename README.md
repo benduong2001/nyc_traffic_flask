@@ -15,7 +15,7 @@
 * This is a sub-project of this older kaggle project: https://github.com/benduong2001/ArcGIS_Project_nyc_traffic
 
 
-### Setup with Conda
+### Setup with Cloning Repo Locally (Conda)
 
 Get a new conda environment up and running and run as follows
 ```
@@ -34,7 +34,7 @@ pip install sodapy
 pip install polars
 pip install pyarrow
 ```
-Activate the environment; fork the project locally and run the run.py file with argument "setupdisplay" one time only (it will take ~20 minutes)
+Activate the environment; clone the project locally and run the run.py file with argument "setupdisplay" one time only (it will take ~20 minutes).
 ```
 conda activate geoenv
 git clone https://github.com/benduong2001/nyc_traffic_flask.git
@@ -42,13 +42,19 @@ cd C:/Users/Benson/nyc_traffic_flask/
 python run.py setupdisplay
 conda deactivate
 ```
-After that, all that is needed is to run the app.py inside the display directory.
+After that, all that is needed is to run the app.py
 ```
 conda activate geoenv
-cd C:/Users/Benson/nyc_traffic_flask/display
+cd C:/Users/Benson/nyc_traffic_flask/
 python app.py
 ```
 
 ### Setup with Docker
 
-**Docker Image**: bensonduong/nyc_traffic:latest
+**Docker Image**: bensonduong/nyc_traffic_premade:latest
+
+Run the following and open a browser window at localhost:5000, which sends you to the webpage in the video clip seen above. The map takes a bit of time to load before using.
+```
+docker run -d -p 5000:5000 bensonduong/nyc_traffic_premade
+```
+

@@ -98,7 +98,9 @@ class Input_Reader:
         return traffic_inputs
     
 def make_prediction(form):
-    args = build_configs.main("../")
+    path_folder = ""
+    print(os.listdir(path_folder))
+    args = build_configs.main(path_folder)
     input_reader_object = Input_Reader(args)
     input_reader_object.set_form(form)
     traffic_inputs = input_reader_object.build_traffic_inputs()
