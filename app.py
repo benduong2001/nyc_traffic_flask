@@ -36,6 +36,8 @@ def main():
         traffic_inputs["IsWeekend"] = int("IsWeekend" in traffic_inputs)
         for key in traffic_inputs:
             traffic_inputs[key] = float(traffic_inputs[key])
+        traffic_inputs["LandUse_NULL"] = traffic_inputs["LandUse_00"]
+        traffic_inputs.pop("LandUse_00")
         
         #print(traffic_inputs)        
         

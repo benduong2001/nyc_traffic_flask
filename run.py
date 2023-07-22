@@ -146,8 +146,8 @@ class Temp_Project_Workflow:
                 self.run_setupdisplay(args)
     
 def main(targets):
-    import build_configs; build_configs.main(); # TODO, comment out; put access.json and build_jsons in gitignore
-    import build_access; build_access.main(); # TODO, comment out; put access.json and build_jsons in gitignore
+    import build_configs; configs = build_configs.main(); # TODO, comment out; put access.json and build_jsons in gitignore
+    import build_access; access = build_access.main(); # TODO, comment out; put access.json and build_jsons in gitignore
 
     path_folder = os.getcwd()
     file_name_configs = "configs.json"

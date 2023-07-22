@@ -34,7 +34,7 @@ WORKDIR /app
 
 # install the dependencies and packages in the requirements file
 #RUN pip install -r requirements.txt
-RUN pip install --no-cache-dir geopandas numpy pandas matplotlib scipy scikit-learn bs4 requests seaborn gdown shapely werkzeug flask geojson sodapy statsmodels polars pyarrow tqdm 
+RUN pip install --no-cache-dir scikit-learn werkzeug flask geojson numpy pandas shapely requests geopandas matplotlib scipy bs4 seaborn gdown sodapy statsmodels polars pyarrow tqdm 
 
 # copy every content from the local file to the image
 # this means the geojsons!

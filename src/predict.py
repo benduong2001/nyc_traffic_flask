@@ -61,7 +61,6 @@ class Input_Reader:
     def build_traffic_inputs(self):
         version = self.get_version(self.form)
         traffic_inputs = self.form
-        traffic_inputs["LandUse_NULL"] = traffic_inputs["LandUse_00"]
         if version == 0:
         # 0 just coords
             longitude = traffic_inputs["longitude"]
@@ -98,9 +97,9 @@ class Input_Reader:
         return traffic_inputs
     
 def make_prediction(form):
-    path_folder = ""
+    path_folder = "./"
     print(os.listdir(path_folder))
-    args = build_configs.main(path_folder)
+    args = build_configs.main()
     input_reader_object = Input_Reader(args)
     input_reader_object.set_form(form)
     traffic_inputs = input_reader_object.build_traffic_inputs()

@@ -22,9 +22,13 @@ def main(path_folder=None):
               }}
     file_name_access = "access.json"
     path_file_access = os.path.join(path_folder, file_name_access)
-    with open(path_file_access, "w") as f:
-        json.dump(access, f)
-        f.close()
+    try:
+        with open(path_file_access, "w") as f:
+            json.dump(access, f)
+            f.close()
+    except:
+        pass
+    return access
 
 
 
