@@ -1,0 +1,11 @@
+default:
+  outputs:
+    dev:
+      dbname: nyc_data
+      host: localhost
+      password: password
+      port: 5432
+      schema: nyc_data_schema
+      type: postgres
+      user: postgres
+  target: dev

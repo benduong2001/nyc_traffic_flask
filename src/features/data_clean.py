@@ -138,7 +138,7 @@ class Temp_Data_Preparation_Builder:
         # Median will be the numerical column imputation value. In this case, only Number_Tra needs to be imputed; by choosing np.median as the imputer value, the pre-imputed and post-imputed look the least dissimilar. The mean can work too.
         # this is still the case even if numerical imputation was done before vehicular-street filtering.
         # street_segment_geodata['Number_Tra'] = street_segment_geodata['Number_Tra'].fillna(street_segment_geodata['Number_Tra'].median(axis=0))
-        street_segment_cleaned_gdf = street_segment_gdf
+        street_segment_cleaned_gdf = street_segment_gdf[self.street_segment_gdf_column_names]
         return street_segment_cleaned_gdf
 
     def save_gdf_to_geojson(
@@ -185,7 +185,7 @@ class Temp_Data_Preparation_Builder:
         landuse_gdf,
         ):
         # gdf
-        landuse_cleaned_gdf = landuse_gdf
+        landuse_cleaned_gdf = landuse_gdf[self.landuse_gdf_column_names]
         return landuse_cleaned_gdf
 
     def street_segment_buffer_landuses(
@@ -378,7 +378,6 @@ class Temp_Data_Preparation_Builder:
         # args["path_file_street_segment_landuse_traffic_volume"] = path_file_street_segment_landuse_traffic_volume # TODO: can be taken uplevel,
         self.save_final_data(street_segment_landuse_traffic_volume_df, path_file_street_segment_landuse_traffic_volume)
 
-        self.args = args
 
     def data_clean_optimized(
         self,
@@ -465,7 +464,6 @@ class Temp_Data_Preparation_Builder:
         # args["path_file_street_segment_landuse_traffic_volume"] = path_file_street_segment_landuse_traffic_volume # TODO: can be taken uplevel,
         self.save_final_data(street_segment_landuse_traffic_volume_df, path_file_street_segment_landuse_traffic_volume)
 
-        self.args = args
 
         
 def main(args):
@@ -473,162 +471,3 @@ def main(args):
     #temp_data_preparation_builder_object.data_clean(args);
     temp_data_preparation_builder_object.data_clean_optimized(args);
     return temp_data_preparation_builder_object
-    
-"""
-WITH
-street_segment_orig AS (
-SELECT
-SS0.* FROM
-street_segment_orig SS0
-)
-
-, street_segment_projected AS (
-SELECT
-SS0.*,
-ST_Transform(SS0.geometry,3857) as geom
-FROM street_segment_orig SS0
-)
-
-, landuse_projected AS (
-SELECT
-L0.*,
-ST_Transform(L0.geometry,3857) as geom
-FROM landuse_orig L0
-)
-
-, street_segment_cleaned AS (
-SS0.Segment_ID
-, SS0.SHAPE_Leng AS StreetLength
-, SS0.StreetWidt::DOUBLE AS StreetWidth
-, SS0.Number_Tra::INTEGER AS Number_Travel_Lanes
-, COALESCE(SS0.FeatureTyp, 'NULL') AS FeatureType
-, COALESCE(SS0.RW_TYPE, 'NULL') AS RW_TYPE
-, COALESCE(SS0.TrafDir, 'NULL') AS TrafDir
-, COALESCE(SS0.Status, 'NULL') AS Status
-, SS0.geometry
-FROM street_segment_projected SS0
-WHERE
-RW_Type IN (['1','2','3','4','9','11','13','NULL')
-AND FeatureType NOT IN ('F', 'A', 'W', '9', '8','2','5')
-AND (TrafDir <> 'P' OR TrafDir <> 'NULL')
-AND (Status = '2' OR Status = 'NULL')
-)
-
-, street_segment_buffers AS (
-SELECT
-SS1.Segment_ID,
-ST_BUFFER(SS1.geom, 150) AS geom
-FROM street_segment_cleaned SS1
-)
-
-, street_segment_buffer_landuses AS (
-SELECT
-SSB0.Segment_ID,
-L0.landuse
-FROM street_segment_buffers AS SSB0
-JOIN landuse AS L0
-ON ST_Contains(L0.geom, SSB0.geom) OR ST_Intersects(L0.geom, SSB0.geom)
-)
-
-, street_segment_buffer_landuses_pivoted AS (
-SELECT
-SSBL0.Segment_ID
-, SUM(CASE WHEN (SSBL0.LandUse = '01') THEN 1 ELSE 0 END) AS LandUse_01
-, SUM(CASE WHEN (SSBL0.LandUse = '02') THEN 1 ELSE 0 END) AS LandUse_02
-, SUM(CASE WHEN (SSBL0.LandUse = '03') THEN 1 ELSE 0 END) AS LandUse_03
-, SUM(CASE WHEN (SSBL0.LandUse = '04') THEN 1 ELSE 0 END) AS LandUse_04
-, SUM(CASE WHEN (SSBL0.LandUse = '05') THEN 1 ELSE 0 END) AS LandUse_05
-, SUM(CASE WHEN (SSBL0.LandUse = '06') THEN 1 ELSE 0 END) AS LandUse_06
-, SUM(CASE WHEN (SSBL0.LandUse = '07') THEN 1 ELSE 0 END) AS LandUse_07
-, SUM(CASE WHEN (SSBL0.LandUse = '08') THEN 1 ELSE 0 END) AS LandUse_08
-, SUM(CASE WHEN (SSBL0.LandUse = '09') THEN 1 ELSE 0 END) AS LandUse_09
-, SUM(CASE WHEN (SSBL0.LandUse = '10') THEN 1 ELSE 0 END) AS LandUse_10
-, SUM(CASE WHEN (SSBL0.LandUse = '11') THEN 1 ELSE 0 END) AS LandUse_11
-, SUM(CASE WHEN (SSBL0.LandUse IS NULL) THEN 1 ELSE 0 END) AS LandUse_NULL
-COUNT(*) AS tempNumLandUses
-FROM street_segment_buffer_landuses SSBL0
-GROUP BY SSBL0.Segment_ID
-)
-
-, street_segment_geoenriched AS (
-SELECT
-SS1.Segment_ID
-, SS1.StreetWidth
-, SS1.Number_Travel_Lanes
-, SS1.StreetLength
-, SSBLP0.LandUse_01/SSBLP0.tempNumLandUses AS LandUse_01
-, SSBLP0.LandUse_02/SSBLP0.tempNumLandUses AS LandUse_02
-, SSBLP0.LandUse_03/SSBLP0.tempNumLandUses AS LandUse_03
-, SSBLP0.LandUse_04/SSBLP0.tempNumLandUses AS LandUse_04
-, SSBLP0.LandUse_05/SSBLP0.tempNumLandUses AS LandUse_05
-, SSBLP0.LandUse_06/SSBLP0.tempNumLandUses AS LandUse_06
-, SSBLP0.LandUse_07/SSBLP0.tempNumLandUses AS LandUse_07
-, SSBLP0.LandUse_08/SSBLP0.tempNumLandUses AS LandUse_08
-, SSBLP0.LandUse_09/SSBLP0.tempNumLandUses AS LandUse_09
-, SSBLP0.LandUse_10/SSBLP0.tempNumLandUses AS LandUse_10
-, SSBLP0.LandUse_11/SSBLP0.tempNumLandUses AS LandUse_11
-, SSBLP0.LandUse_NULL/SSBLP0.tempNumLandUses AS LandUse_NULL
-FROM street_segment_cleaned SS1
-LEFT JOIN
-street_segment_buffer_landuses_pivoted SSBLP0
-ON
-SS1.Segment_ID = SSBLP0.Segment_ID
-)
-
-, traffic_volume_cleaned AS (
-SELECT
-TV0.*
-, TV0.M // 3 AS Season
-, EXTRACT(ISODOW FROM MAKE_DATE(TV0.Yr, TV0.M, TV0.D)) AS DayOfWeek
-, (CASE WHEN (EXTRACT(ISODOW FROM MAKE_DATE(TV0.Yr, TV0.M, TV0.D)) < 6) THEN 0 ELSE 1 END) AS IsWeekend
-FROM traffic_volume_orig TV0
-)
-
-, traffic_volume_agg_directions AS (
-SELECT
-TV0.SegmentID
-, TV0.Yr
-, TV0.M
-, TV0.D
-, TV0.HH
-, TV0.MM
-, SUM(TV0.Vol) AS Vol
-FROM traffic_volume_cleaned TV0
-GROUP BY
-TV0.SegmentID
-, TV0.Yr
-, TV0.M
-, TV0.D
-, TV0.HH
-, TV0.MM
-)
-
-, traffic_volume_agg_season_weekend_hour AS (
-SELECT
-TV0.SegmentID
-, TV0.Season
-, TV0.IsWeekend
-, TV0.HH
-, AVG(TV0.Vol) AS Vol
-FROM traffic_volume_agg_directions TV0
-GROUP BY
-TV0.SegmentID
-, TV0.Season
-, TV0.IsWeekend
-, TV0.HH
-)
-
-, final_data AS (
-SELECT
-SSGE0.*,
-TVSWH0.Season,
-TVSWH0.IsWeekend,
-TVSWH0.HH AS Hour,
-FROM traffic_volume_agg_season_weekend_hour TVSWH0
-LEFT JOIN street_segment_geoenriched SSGE0
-ON TVSWH0.SegmentID = SSGE0.Segment_ID
-)
-
-SELECT *
-FROM final_data;
-"""

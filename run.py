@@ -43,14 +43,31 @@ class Temp_Project_Workflow:
                                         "static"), exempt_files)
         # TODO: clear the database in the dbt folder
         self._clear_folder(os.path.join(path_folder, "src", "features", "dbtnyc","data"), exempt_files)
-        pass
 
+
+        # reset the password to being blank in the dbt profiles yaml
+        import yaml
+        path_file_dbt_profile_yaml = args["path_file_dbt_profile_yaml"]
+        with open(path_file_dbt_profile_yaml, "r") as f:
+            dbt_profile_yaml = yaml.safe_load(f)
+            f.close()
+        dbt_profile_yaml["default"]["outputs"]["dev"]["password"] = "password"
+        with open(path_file_dbt_profile_yaml, "w") as f:
+            yaml.dump(dbt_profile_yaml, f)
+            f.close()
+        pass
+        try:
+            from src.data.pgsql_db import Temp_PostGIS_Database_Builder
+            Temp_PostGIS_Database_Builder(args).remove_database()
+        except:
+            pass
     def run_data(self, args=None):
         if args is None: args = self.args;
         
         import src.data.etl as etl
         temp_dataset_builder_object = etl.main(args)
         #self.args = temp_dataset_builder_object.args;
+        return temp_dataset_builder_object
 
     def run_features(self, args=None):
         if args is None: args = self.args;
@@ -58,7 +75,7 @@ class Temp_Project_Workflow:
         import src.features.data_clean as data_clean
         temp_dataset_preparation_object = data_clean.main(args)
         #self.args = temp_dataset_preparation_object.args;
-
+        return temp_dataset_preparation_object
 
     def run_model(self, args=None):
         if args is None: args = self.args;
@@ -66,6 +83,7 @@ class Temp_Project_Workflow:
         import src.models.model as model
         temp_model_builder_object = model.main(args)
         #self.args = temp_model_builder_object.args;
+        return temp_model_builder_object
 
     def run_setup(self, args=None):
         if args is None: args = self.args;
@@ -121,8 +139,65 @@ class Temp_Project_Workflow:
         print("save landuse to geojson")
         tdpb.save_gdf_to_geojson(landuse_cleaned_gdf[['LandUse','geometry']],path_file_landuse_geojson)
         
+    def run_postgresql(self, args=None):
+        # create the postgis database for dbt
+        if args is None: args = self.args;
+        import src.data.pgsql_db as postgis_db
+        temp_postgis_database_builder_object = postgis_db.main(args)
+        return temp_postgis_database_builder_object
         
+    def run_dbt(self, args=None):
+        if args is None: args = self.args;
+        import yaml
 
+        # set the password in the dbt profiles yaml to the password in the access json (currently set to None for safety)
+        pgsql_db_password = args["access"]["pgsql_db"]["password"]
+        path_file_dbt_profile_yaml = args["path_file_dbt_profile_yaml"]
+        with open(path_file_dbt_profile_yaml, "r") as f:
+            dbt_profile_yaml = yaml.safe_load(f)
+            f.close()
+        dbt_profile_yaml["default"]["outputs"]["dev"]["password"] = pgsql_db_password
+        with open(path_file_dbt_profile_yaml, "w") as f:
+            yaml.dump(dbt_profile_yaml, f)
+            f.close()
+
+        #from src.data.pgsql_db import Temp_PostGIS_Database_Builder
+        #tpgdbb = Temp_PostGIS_Database_Builder(args)
+        # run dbt
+    def dag(self, args=None):
+        if args is None: args = self.args;
+
+        from airflow import DAG
+        from airflow.operators.bash_operator import BashOperator
+        from airflow.operators.python_operator import PythonOperator
+        from datetime import datetime
+
+        from src.data.etl import Temp_Dataset_Builder
+        from src.data.pgsql_db import Temp_PostGIS_Database_Builder
+        from src.models.model import Temp_Model_Builder
+
+        tdsb = Temp_Dataset_Builder(args)
+        tpgdbb = Temp_PostGIS_Database_Builder(args)
+        tmb = Temp_Model_Builder(args)
+
+        default_args = {
+            'owner': 'my_user',
+            'start_date': datetime(2022, 1, 1),
+            'retries': 1,
+            #'retry_delay': datetime.timedelta(minutes=5)
+        }
+
+        dag = DAG('nyc_dag', default_args=default_args, schedule_interval=None)
+
+        task_clear = PythonOperator(task_id="clear",python_callable=self.run_clear,dag=dag)
+        task_data = PythonOperator(task_id="data",python_callable=tdsb.etl,dag=dag)
+        task_postgresql = PythonOperator(task_id="postgresql",python_callable=tpgdbb.setup,dag=dag)
+        task_dbt = PythonOperator(task_id="postgresql",python_callable=self.run_dbt,dag=dag)
+        task_post_dbt = PythonOperator(task_id="postgresql",python_callable=tpgdbb.post_dbt_table_exports,dag=dag)
+        task_model = PythonOperator(task_id="postgresql",python_callable=tmb.execute,dag=dag)
+
+        task_clear >> task_data >> task_postgresql >> task_dbt >> task_post_dbt >> task_model
+        
     def run(self, targets, args=None):
         if args is None: args = self.args;
         # 
@@ -144,10 +219,12 @@ class Temp_Project_Workflow:
                 self.run_all(args)
             if target in ["setupdisplay"]:
                 self.run_setupdisplay(args)
+            if target in ["dag"]:
+                self.run_dag(args)
     
 def main(targets):
-    import build_configs; configs = build_configs.main(); # TODO, comment out; put access.json and build_jsons in gitignore
-    import build_access; access = build_access.main(); # TODO, comment out; put access.json and build_jsons in gitignore
+    import build_configs;
+    configs = build_configs.main(); # TODO, comment out; put access.json and build_jsons in gitignore
 
     path_folder = os.getcwd()
     file_name_configs = "configs.json"
@@ -160,6 +237,14 @@ def main(targets):
 
     args = configs
     args["path_folder"] = path_folder
+
+    import build_access; 
+    file_name_access = "access.json"
+    path_file_access = os.path.join(path_folder, file_name_access)
+    if os.path.exists(path_file_access):
+        pass
+    else:
+       access = build_access.main();
 
     file_name_access = "access.json"
     path_file_access = os.path.join(path_folder, file_name_access)

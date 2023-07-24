@@ -211,7 +211,7 @@ class Temp_Dataset_Builder:
         # replace the csv with a parquet for compression
         path_file_traffic_volume = args["path_file_traffic_volume_precompressed"]
         df = polars.read_csv(path_file_traffic_volume)
-        os.remove(path_file_traffic_volume)
+        #os.remove(path_file_traffic_volume) # DO NOT remove the precompressed csv, keep it later for postgresql database loading
         path_file_traffic_volume = args["path_file_traffic_volume"] # os.path.join(args["path_folder"],"data","raw","raw_orig_data","traffic_volume.parquet")
         # args["path_file_traffic_volume"] = path_file_traffic_volume; self.args = args; # TODO: can be taken uplevel, thus avoiding needing to update args with self.args = args;
         df.write_parquet(path_file_traffic_volume)
@@ -223,6 +223,9 @@ class Temp_Dataset_Builder:
         self.etl_street_segment()
         self.etl_traffic_volume()
         self.etl_landuse()
+
+
+
 
 def main(args):
     temp_dataset_builder_object = Temp_Dataset_Builder(args)

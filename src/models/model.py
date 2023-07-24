@@ -55,14 +55,20 @@ class Temp_Model_Builder:
     def __init__(self, args):
         self.args = args
         self.seed = 1
-    def load_input_data(self, path_file_street_segment_landuse_traffic_volume):
+    def load_input_data(self,
+        path_file_street_segment_landuse_traffic_volume=None,
+        args=None):
+        if args is None: args = self.args;
+        if path_file_street_segment_landuse_traffic_volume is None: path_file_street_segment_landuse_traffic_volume = args["path_file_street_segment_landuse_traffic_volume"];
         df = pd.read_csv(path_file_street_segment_landuse_traffic_volume)
         df = df.dropna(subset=["Segment_ID"])
         df = df.fillna({"Number_Tra": 2}) # Number_Tra is the only column with nulls left. All roads should have at bare minimum 2 travel lanes. So this gets imputed by 2
         self.df = df
         return df
     
-    def build_column_names(self):
+    def build_column_names(self,
+        args=None):
+        if args is None: args = self.args;
         column_names = {
         "categorical_column_names": ["HH","Season"],
         "numerical_column_names": ["StreetWidt","Number_Tra"]+["LandUse_"+str.zfill(str(x),2) for x in range(1,12)]+["LandUse_NULL"],
@@ -72,12 +78,16 @@ class Temp_Model_Builder:
         self.column_names = column_names
         self.input_column_names = sum(list(column_names.values()),[])
         self.output_column_name = "Vol"
-    def build_X(self, X=None):
+    def build_X(self, X=None,
+        args=None):
+        if args is None: args = self.args;
         if X is None:
             X = self.df[self.input_column_names]
         self.X = X
         return X
-    def build_y(self, y=None):
+    def build_y(self, y=None,
+        args=None):
+        if args is None: args = self.args;
         if y is None:
             tri_level = lambda x: [["Low","Medium"][x>=-1],"High"][x>=1]
             y = pd.Series(StandardScaler().fit_transform(self.df[[self.output_column_name]]
@@ -88,7 +98,9 @@ class Temp_Model_Builder:
         self,
         X=None,
         y=None,
-    ):
+        args=None):
+        if args is None: args = self.args;
+        
         if X is None or y is None:
             X = self.X
             y = self.y
@@ -98,7 +110,9 @@ class Temp_Model_Builder:
         self.X_test = X_test
         self.y_train = y_train
         self.y_test = y_test
-    def build_preprocessing_pipeline(self):
+    def build_preprocessing_pipeline(self,
+        args=None):
+        if args is None: args = self.args;
         column_names = self.column_names
         
         categorical_column_names = column_names["categorical_column_names"]
@@ -141,7 +155,9 @@ class Temp_Model_Builder:
         self, 
         model_choice=LogisticRegression(max_iter=500),
         preprocessing_pipeline=None,
-        ):
+        args=None):
+        if args is None: args = self.args;
+        
         if preprocessing_pipeline is None: preprocessing_pipeline = self.preprocessing_pipeline;
         model_pipeline = Pipeline([
                 ("preprocessing", preprocessing_pipeline),
@@ -154,7 +170,8 @@ class Temp_Model_Builder:
         model_pipeline=None,
         X=None,
         y=None,
-    ):
+        args=None):
+        if args is None: args = self.args;
         if model_pipeline is None: model_pipeline = self.model_pipeline;
         if X is None: X = self.X_train;
         if y is None: y = self.y_train;
@@ -167,7 +184,9 @@ class Temp_Model_Builder:
         model_pipeline=None, 
         X=None,
         y=None,
-        ):
+        args=None):
+        if args is None: args = self.args;
+        
         if model_pipeline is None: model_pipeline = self.model_pipeline;
         if X is None: X = self.X_test;
         if y is None: y = self.y_test;
@@ -175,14 +194,17 @@ class Temp_Model_Builder:
         return model_pipeline.score(X, y)
     def save_model(
         self, 
-        path_file_model_pipeline_pickle,
-        model_pipeline=None, 
-    ):
+        path_file_model_pipeline_pickle=None,
+        model_pipeline=None, args=None):
+        if args is None: args = self.args;
+        if path_file_model_pipeline_pickle is None: path_file_model_pipeline_pickle = self.args["path_file_model_pipeline_pickle"];
         if model_pipeline is None: model_pipeline = self.model_pipeline;        
         with open(path_file_model_pipeline_pickle, 'wb') as f:
             pickle.dump(model_pipeline, f)
             f.close()
-    def execute(self):
+    def execute(self, args=None):
+        if args is None: args = self.args;
+        self.load_input_data()
         self.build_column_names()
         self.build_X()
         self.build_y()
@@ -190,15 +212,10 @@ class Temp_Model_Builder:
         self.build_preprocessing_pipeline()
         self.build_model_pipeline()
         self.fit_model()
+        self.save_model()
         print(self.evaluate_model())
     
 def main(args):
-    path_file_street_segment_landuse_traffic_volume = args["path_file_street_segment_landuse_traffic_volume"]
-    temp_model_builder_object = Temp_Model_Builder(args)
-    temp_model_builder_object.load_input_data(path_file_street_segment_landuse_traffic_volume)
-    
+    temp_model_builder_object = Temp_Model_Builder(args)    
     temp_model_builder_object.execute()
-    
-    path_file_model_pipeline_pickle = args["path_file_model_pipeline_pickle"] # os.path.join(args["path_folder"],"data","final","multinomreg.pkl")
-    temp_model_builder_object.save_model(path_file_model_pipeline_pickle)
     return temp_model_builder_object

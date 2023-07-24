@@ -1,0 +1,27 @@
+analysis-paths:
+- analyses
+clean-targets:
+- target
+- dbt_packages
+config-version: 2
+macro-paths:
+- macros
+model-paths:
+- models
+models:
+  tempsample:
+    example:
+      +materialized: view
+name: dbtnyc
+profile: default
+seed-paths:
+- seeds
+snapshot-paths:
+- snapshots
+test-paths:
+- tests
+vars:
+  projection: 3857
+  radius: 150
+  null_placeholder: "NULL"
+version: 1.0.0
