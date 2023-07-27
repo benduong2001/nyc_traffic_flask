@@ -51,4 +51,8 @@ python app.py
 
 ### Setup with Docker
 
-**Docker Image**: bensonduong/nyc_traffic_premade:latest
+**Docker Image**: bensonduong/nyc_traffic_prediction_app:latest
+
+```
+docker run -d -p 5000:5000 bensonduong/nyc_traffic_prediction_app1
+```
