@@ -1,4 +1,3 @@
-import geopandas as gpd
 import pandas as pd
 import numpy as np
 from scipy.stats import zscore
@@ -8,12 +7,10 @@ import os
 import sys
 sys.path.append(".")
 import build_configs
-from src.features.data_clean import Temp_Data_Preparation_Builder
 
 class Input_Reader:
     def __init__(self, args):
         self.args = args;
-        self.tdpb = Temp_Data_Preparation_Builder(self.args)
     def set_form(self, form):
         self.form = form
     def get_street_segments_near_point(
@@ -21,6 +18,9 @@ class Input_Reader:
         temp_point,
         temp_buffer_radius=500,
         ):
+        import geopandas as gpd
+        from src.features.data_clean import Temp_Data_Preparation_Builder
+        self.tdpb = Temp_Data_Preparation_Builder(self.args)
         #temp_point = Point(longitude, latitude)
         path_file_street_segment_shapefile = self.args["path_file_street_segment_shapefile"]
         temp_point_gdf = gpd.GeoDataFrame({'geometry': [temp_point]}, crs=4326)
@@ -35,6 +35,10 @@ class Input_Reader:
         self,
         selected_street_segment_gdf,
         ):
+        import geopandas as gpd
+        from src.features.data_clean import Temp_Data_Preparation_Builder
+        self.tdpb = Temp_Data_Preparation_Builder(self.args)
+        
         path_file_landuse_shapefile = self.args["path_file_landuse_shapefile"]
         print(selected_street_segment_gdf.crs)
 
@@ -94,6 +98,13 @@ class Input_Reader:
         else:
             pass
         print(traffic_inputs)
+        traffic_inputs.pop("Segment_ID")
+        traffic_inputs.pop("streetSegmentCentroidLongitude")
+        traffic_inputs.pop("streetSegmentCentroidLatitude")
+        traffic_inputs.pop("longitude")
+        traffic_inputs.pop("latitude")
+
+
         return traffic_inputs
     
 def make_prediction(form):

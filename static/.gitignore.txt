@@ -1,5 +1,5 @@
-!folder/
-folder/*
+temp.txt
+
 *
 !.gitignore
 !stub.txt
