@@ -148,7 +148,9 @@ class Temp_Data_Preparation_Builder:
         ):
         #path_folder = args["path_folder"]
         #path_file_geojson = os.path.join(path_folder,"display","static",file_name_geojson)
-        
+        if os.path.exists(path_file_geojson):
+            # if the geojson already exists, do not write it again to save time.
+            return
         gdf.to_file(path_file_geojson, driver="GeoJSON")
         #with open(path_file_geojson , 'r') as f:
         #    gj = geojson.load(f)
