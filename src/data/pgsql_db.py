@@ -25,8 +25,8 @@ class Temp_PostGIS_Database_Builder:
     # https://pola-rs.github.io/polars-book/user-guide/io/database/#adbc_1
     def __init__(self, args):
         self.args = args;
-        self.set_credentials(self)
-        self.get_engine_url(self)
+        self.set_credentials()
+        self.get_engine_url()
     def set_credentials(self):
         self.pgsql_db_username = "postgres"
         self.pgsql_db_password = self.args["access"]["pgsql_db"]["password"]
@@ -153,7 +153,7 @@ class Temp_PostGIS_Database_Builder:
     def add_traffic_volume_df_to_postgis_database(self, args=None):
         if args is None: args = self.args;
         self.add_traffic_volume_df_to_postgis_database_from_pandas_by_incremental_chunk_reading()
-    def setup(self, self, args=None):
+    def setup(self, args=None):
         if args is None: args = self.args;
         self.create_postgresql_database()
         self.activate_postgis_extension()

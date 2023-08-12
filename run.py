@@ -164,7 +164,7 @@ class Temp_Project_Workflow:
         #from src.data.pgsql_db import Temp_PostGIS_Database_Builder
         #tpgdbb = Temp_PostGIS_Database_Builder(args)
         # run dbt
-    def dag(self, args=None):
+    def run_dag(self, args=None):
         if args is None: args = self.args;
 
         from airflow import DAG
@@ -182,7 +182,7 @@ class Temp_Project_Workflow:
 
         default_args = {
             'owner': 'my_user',
-            'start_date': datetime(2022, 1, 1),
+            'start_date': datetime.today(),
             'retries': 1,
             #'retry_delay': datetime.timedelta(minutes=5)
         }
@@ -192,9 +192,9 @@ class Temp_Project_Workflow:
         task_clear = PythonOperator(task_id="clear",python_callable=self.run_clear,dag=dag)
         task_data = PythonOperator(task_id="data",python_callable=tdsb.etl,dag=dag)
         task_postgresql = PythonOperator(task_id="postgresql",python_callable=tpgdbb.setup,dag=dag)
-        task_dbt = PythonOperator(task_id="postgresql",python_callable=self.run_dbt,dag=dag)
-        task_post_dbt = PythonOperator(task_id="postgresql",python_callable=tpgdbb.post_dbt_table_exports,dag=dag)
-        task_model = PythonOperator(task_id="postgresql",python_callable=tmb.execute,dag=dag)
+        task_dbt = PythonOperator(task_id="dbt",python_callable=self.run_dbt,dag=dag)
+        task_post_dbt = PythonOperator(task_id="post_dbt",python_callable=tpgdbb.post_dbt_table_exports,dag=dag)
+        task_model = PythonOperator(task_id="model",python_callable=tmb.execute,dag=dag)
 
         task_clear >> task_data >> task_postgresql >> task_dbt >> task_post_dbt >> task_model
         
